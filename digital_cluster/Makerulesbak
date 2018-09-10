@@ -1,0 +1,54 @@
+#*-*- Makefile -*-************************************************************
+#
+#              Freescale Confidential and Proprietary
+#
+# $Source: /home/$
+#
+# content:     general definitions to compile EGL/OVG examples
+# language:    Makefile
+# author:      Michael Staudenmaier
+# created:     31.07.2009
+# version:     $Revision: 1.3 $
+# modified:    $Date: 2011/11/14 16:55:44 $
+# by:          $Author: davor $
+#
+#*****************************************************************************
+
+
+#### set the following two variables to match your environment ##########
+
+# location where rootfs image of the target board resides
+# usually the {TLIB base directory}/rootfs
+LTIB_DIR=/home/wugn/imx-yocto-bsp/imx8-build/tmp/work/aarch64-mx8qm-poky-linux/imx-gpu-viv/1_6.2.4.p0.3-aarch64-r0
+#/home/wugn/imx-yocto-bsp/imx8-build/tmp/work/aarch64-mx8qm-poky-linux/imx-gpu-viv/1_6.2.4.p0.3-aarch64-r0/package/usr/include
+ROOTFS=$(LTIB_DIR)/image
+
+# location of the header files for OpenGL / OpenVG
+EXTRA_HEADER_PATH=$(LTIB_DIR)/image/usr/include
+LINUX_HEADER_PATH=$(LTIB_DIR)/rpm/BUILD/linux/include
+#########################################################################
+
+# tools configuration - this is the ltib standard
+#GNUTOOL_PATH=/home/wugn/gcc-4.4.4-glibc-2.11.1-multilib-1.0/arm-fsl-linux-gnueabi/bin/
+GNUTOOL_PATH=/opt/fsl-imx-x11/4.9.51-mx8-beta/sysroots/x86_64-pokysdk-linux/usr/bin/aarch64-poky-linux/
+#/home/wugn/gcc-4.6.2-glibc-2.13-linaro-multilib-2011.12/fsl-linaro-toolchain/bin/
+GNUTOOL_PREFIX=aarch64-poky-linux-
+#arm-fsl-linux-gnueabi-
+
+CC = $(GNUTOOL_PATH)$(GNUTOOL_PREFIX)gcc
+AR = $(GNUTOOL_PATH)$(GNUTOOL_PREFIX)ar
+
+CFLAGS += -mfloat-abi=softfp -mfpu=vfp  -DEGL_CLIENT_API_OPENVG -DLINUX -DEGL_API_FB
+#LFLAGS += -m64
+
+# flags required to build OpenGL ES / OpenVG apps
+EXTRA_CFLAGS = -I$(EXTRA_HEADER_PATH) -I$(LINUX_HEADER_PATH)
+
+
+TARGET_PATH_LIB = $(ROOTFS)/usr/lib
+LDFLAGS_OES = -lGLESv2 -lEGL -lm -ldl -Wl,--library-path=$(TARGET_PATH_LIB),-rpath-link=$(TARGET_PATH_LIB)
+LDFLAGS_OVG = -lOpenVG -lEGL -lm -ldl -Wl,--library-path=$(TARGET_PATH_LIB),-rpath-link=$(TARGET_PATH_LIB)
+LDFLAGS_EGL = -lEGL -Wl,--library-path=$(TARGET_PATH_LIB),-rpath-link=$(TARGET_PATH_LIB)
+
+%.o:%.c
+	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -c $< -o $@
