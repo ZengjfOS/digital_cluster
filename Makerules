@@ -1,0 +1,45 @@
+#*-*- Makefile -*-************************************************************
+#
+#              Freescale Confidential and Proprietary
+#
+# $Source: /home/$
+#
+# content:     general definitions to compile EGL/OVG examples
+# language:    Makefile
+# author:      Michael Staudenmaier
+# created:     31.07.2009
+# version:     $Revision: 1.3 $
+# modified:    $Date: 2011/11/14 16:55:44 $
+# by:          $Author: davor $
+#
+#*****************************************************************************
+
+
+#### set the following two variables to match your environment ##########
+
+# location where rootfs image of the target board resides
+# usually the {TLIB base directory}/rootfs
+LTIB_DIR=/home/wugn/imx-yocto-bsp/imx8-build-fb/tmp/sysroots/imx8qmmek
+
+ROOTFS=$(LTIB_DIR)
+
+# location of the header files for OpenGL / OpenVG
+EXTRA_HEADER_PATH=$(LTIB_DIR)/usr/include
+LINUX_HEADER_PATH=$(LTIB_DIR)/usr/include
+#########################################################################
+
+CC = aarch64-poky-linux-gcc  --sysroot=/opt/fsl-imx-x11/4.9.51-mx8-beta/sysroots/aarch64-poky-linux
+AR = aarch64-poky-linux-ar  --sysroot=/opt/fsl-imx-x11/4.9.51-mx8-beta/sysroots/aarch64-poky-linux
+
+CFLAGS += -DEGL_CLIENT_API_OPENVG -DLINUX -DEGL_API_FB #-mfloat-abi=softfp -mfpu=vfp
+# flags required to build OpenGL ES / OpenVG apps
+EXTRA_CFLAGS = -I$(EXTRA_HEADER_PATH) -I$(LINUX_HEADER_PATH)
+
+
+TARGET_PATH_LIB = $(ROOTFS)/usr/lib
+LDFLAGS_OES = -lGLESv2 -lEGL -lm -ldl -Wl,--library-path=$(TARGET_PATH_LIB),-rpath-link=$(TARGET_PATH_LIB)
+LDFLAGS_OVG = -lOpenVG -lEGL -lm -ldl -Wl,--library-path=$(TARGET_PATH_LIB),-rpath-link=$(TARGET_PATH_LIB)
+LDFLAGS_EGL = -lEGL -Wl,--library-path=$(TARGET_PATH_LIB),-rpath-link=$(TARGET_PATH_LIB)
+
+%.o:%.c
+	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -c $< -o $@
